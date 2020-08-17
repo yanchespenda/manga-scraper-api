@@ -1,5 +1,6 @@
 const poketo = require('poketo')
 const fs = require('fs')
+const PORT = process.env.PORT || 3000
 const request = require('request')
 const queryString = require('query-string')
 const path = require('path')
@@ -231,9 +232,8 @@ fastify.get('/', async (request, reply) => {
 
 // Run the server!
 const start = async () => {
-    const port = process.env.PORT || 3000
     try {
-        await fastify.listen(port)
+        await fastify.listen(PORT)
         fastify.log.info(`server listening on ${fastify.server.address().port}`)
     } catch (err) {
         fastify.log.error(err)
