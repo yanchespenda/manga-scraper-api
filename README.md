@@ -30,7 +30,7 @@ Scraping image files from manga website, Based on Poketo style
 
 ## API Endpoint
 ```
-\
+https://manga-scraper-api.herokuapp.com/
 ```
 
 | Parameters | Type   | Description   |
