@@ -161,7 +161,14 @@ fastify.get('/', async (request, reply) => {
     let poketoNotSupport = false
     try {
         getImages = await poketo.getChapter(getUrl)
-        // getInfo = await poketo.getSeries("mangadex:18930")
+
+        return reply.code(200).send({
+            error: false,
+            message: "OK",
+            data: {
+                site: getImages
+            }
+        })
     } catch (error) {
         if (error.code === "UNSUPPORTED_SITE") {
             poketoNotSupport = true
@@ -228,6 +235,11 @@ fastify.get('/', async (request, reply) => {
             // getInfo: getInfo
         }
     }
+})
+
+/* Google Drive Streaming */
+fastify.get('/drive', async (request, reply) => {
+
 })
 
 // Run the server!
