@@ -33,11 +33,9 @@ Scraping image files from manga website, Based on Poketo style
 \
 ```
 
-| Parameters | Type   | Description   |   |   |
-|------------|--------|---------------|---|---|
-| url        | string | Full url site |   |   |
-|            |        |               |   |   |
-|            |        |               |   |   |
+| Parameters | Type   | Description   |
+|------------|--------|---------------|
+| url        | string | Full url site |
 
 ### Response API
 ```
