@@ -5,6 +5,7 @@ const komikcastAdapter = require('./adapter/komikcast')
 const MaidAdapter = require('./adapter/maid')
 const KomikuAdapter = require('./adapter/komiku')
 const KomikgueAdapter = require('./adapter/komikgue')
+const KiryuuAdapter = require('./adapter/kiryuu')
 
 const manga = {
     support: (url) => {
@@ -87,6 +88,23 @@ const manga = {
             }
 
             getChapter = await KomikgueAdapter.getChapter(url)
+        }
+        if (KiryuuAdapter.supportsUrl(url)) {
+            console.log("mangaFound: " + KiryuuAdapter.name)
+
+            const matches = utils.pathMatch(
+                url,
+                '/:chapterSlug',
+            )
+
+            if (!matches) {
+                throw {
+                    name: `Unable to parse '${url}'`,
+                    code: `INVALID_URL`,
+                }
+            }
+
+            getChapter = await KiryuuAdapter.getChapter(url)
         }
 
         return getChapter

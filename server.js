@@ -165,9 +165,7 @@ fastify.get('/', async (request, reply) => {
         return reply.code(200).send({
             error: false,
             message: "OK",
-            data: {
-                site: getImages
-            }
+            data: getImages
         })
     } catch (error) {
         if (error.code === "UNSUPPORTED_SITE") {
@@ -201,9 +199,7 @@ fastify.get('/', async (request, reply) => {
         return reply.code(200).send({
             error: false,
             message: "OK",
-            data: {
-                site: getImages
-            }
+            data: getImages
         })
     }
 

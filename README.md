@@ -1,5 +1,5 @@
 # Manga Scraper API
-Scraping image files from manga website
+Scraping image files from manga website, Based on Poketo style
 
 ## Supported Sites
 ### Global
@@ -25,8 +25,36 @@ Scraping image files from manga website
 * [Komikgue](http://www.komikgue.com/)
 * [Komiku](https://komiku.co.id/)
 * [Maid](https://www.maid.my.id/)
+* [Kiryuu](https://kiryuu.co/)
 
 
-## API
-Soon
+## API Endpoint
+```
+\
+```
+
+| Parameters | Type   | Description   |   |   |
+|------------|--------|---------------|---|---|
+| url        | string | Full url site |   |   |
+|            |        |               |   |   |
+|            |        |               |   |   |
+
+### Response API
+```
+{
+    error: (true|false),
+    message: (string),
+    data: {
+        id: (string)[siteId + mangaId + chapterId],
+        url: (string),
+        pages: [
+            {
+                id: (string),
+                url: (string)
+            }
+            ...
+        ]
+    }
+}
+```
  
