@@ -43,27 +43,24 @@ const KomikcastAdapter = {
 
         const $readerArea = dom('#readerarea').first()
         let $imageDom = $readerArea.find('img[loading]')
-        // console.log($imageDom.length)
-        // $imageDom.get().length == 3 ? $imageDom = $readerArea.find('p img') : ''
 
-        const $imageList = $imageDom.get().map((el, idx) => {
-
-            console.log('Item ke ' + idx, el)
-
+        const $imageList = $imageDom.get().map(el => {
             const $row = dom(el)
-            const href = $row.attr('src')
+            const href = $row.attr().src || false
 
             if (href)
-                return href
+                return encodeURI(href)
             return ""
         })
+        // console.log('Item imageList', $imageList)
 
         const chapterId = dom('link[rel=\'shortlink\']').first()
         const chapterIdPre = chapterId.attr('href').replace(this._getHost(), '').replace('/?', '')
         const chapterIdParse = queryString.parse(chapterIdPre)
         const chapterIdPage = chapterIdParse.p || 0
 
-        const pages = $imageList.filter(x => validator.isURL(x)).map((url, i) => {
+        const pages = $imageList.filter(x => validator.isURL(x)).map(url => {
+            // console.log('pages', url)
             const id = url.split('/').pop().split('#')[0].split('?')[0]
             return { id, url }
         })

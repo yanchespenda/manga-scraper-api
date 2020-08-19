@@ -6,6 +6,7 @@ const MaidAdapter = require('./adapter/maid')
 const KomikuAdapter = require('./adapter/komiku')
 const KomikgueAdapter = require('./adapter/komikgue')
 const KiryuuAdapter = require('./adapter/kiryuu')
+const MangakuAdapter = require('./adapter/mangaku')
 
 const manga = {
     support: (url) => {
@@ -88,7 +89,7 @@ const manga = {
             }
 
             getChapter = await KomikgueAdapter.getChapter(url)
-        }
+        } else
         if (KiryuuAdapter.supportsUrl(url)) {
             console.log("mangaFound: " + KiryuuAdapter.name)
 
@@ -104,7 +105,40 @@ const manga = {
                 }
             }
 
-            getChapter = await KiryuuAdapter.getChapter(url)
+            try {
+                getChapter = await KiryuuAdapter.getChapter(url)
+            } catch (error) {
+                console.error('error', error)
+                return reply.code(403).send({
+                    error: true,
+                    message: error
+                })
+            }
+        } else
+        if (MangakuAdapter.supportsUrl(url)) {
+            console.log("mangaFound: " + MangakuAdapter.name)
+
+            const matches = utils.pathMatch(
+                url,
+                '/:chapterSlug',
+            )
+
+            if (!matches) {
+                throw {
+                    name: `Unable to parse '${url}'`,
+                    code: `INVALID_URL`,
+                }
+            }
+
+            try {
+                getChapter = await MangakuAdapter.getChapter(url)
+            } catch (error) {
+                console.error('error', error)
+                return reply.code(403).send({
+                    error: true,
+                    message: error
+                })
+            }
         }
 
         return getChapter

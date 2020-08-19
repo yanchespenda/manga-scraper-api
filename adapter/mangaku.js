@@ -1,16 +1,17 @@
-const cheerio = require('cheerio')
+// const cheerio = require('cheerio')
 const validator = require('validator')
-const get = require('../get')
-const queryString = require('query-string')
+// const get = require('../get')
+// const queryString = require('query-string')
 const utils = require('../utils')
+const puppeteer = require('puppeteer')
 
 
 const KomikgueAdapter = {
-    id: 'komikgue',
-    name: 'Komik Gue',
+    id: 'mangaku',
+    name: 'Mangaku',
 
     supportsUrl(url) {
-        return /^http?:\/\/(www\.)?mangaku.pro/.test(url);
+        return /^https?:\/\/(www\.)?mangaku.pro/.test(url);
     },
 
     supportsReading() {
@@ -18,7 +19,7 @@ const KomikgueAdapter = {
     },
 
     _getHost() {
-        return `http://mangaku.pro`;
+        return `https://mangaku.pro`;
     },
 
     /* async getSeriesId(url) {
@@ -37,21 +38,37 @@ const KomikgueAdapter = {
 
     }, */
 
-    async getChapter(url) {
-        const html = await get(url)
-        const dom = cheerio.load(html.body)
+    async puppeteerRun(url) {
+        console.log('puppeter Run')
+        const browser = await puppeteer.launch()
+        const page = await browser.newPage()
 
-        const $readerArea = dom('#all').first()
-        const $imageDom = $readerArea.find('img')
-
-        const $imageList = $imageDom.get().map(el => {
-            const $row = dom(el)
-            const href = $row.attr('src')
-
-            if (href)
-                return href
-            return ""
+        let $imageList = []
+        page.on('response', async response => {
+            const url = response.url()
+            if (response.request().resourceType() === 'image') {
+                response.buffer().then(file => {
+                   const isCDNImage = /^https?:\/\/(www\.)?cdn.mangaku.link/.test(url)
+                   if (isCDNImage) {
+                        const isJPGImage = url.split('.').pop()
+                        if (isJPGImage === 'jpg' || isJPGImage === 'png') {
+                            // console.log('Image url', url)
+                            $imageList.push(encodeURI(url))
+                        }
+                   }
+                       
+                })
+            }
         })
+
+        await page.goto(url)
+        await browser.close()
+
+        return $imageList
+    },
+
+    async getChapter(url) {
+        const $imageList = await this.puppeteerRun(url)
 
         /* const chapterId = dom('link[rel=\'shortlink\']').first()
         const chapterIdPre = chapterId.attr('href').replace(this._getHost(), '').replace('/?', '')

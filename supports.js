@@ -4,6 +4,7 @@ const supportedDomains = [
     'komiku.co.id',
     'komikgue.com',
     'kiryuu.co',
+    'mangaku.pro',
 ]
 
 module.exports = url => supportedDomains.some(str => url.indexOf(str) !== -1)
