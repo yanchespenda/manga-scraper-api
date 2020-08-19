@@ -6,6 +6,8 @@ const queryString = require('query-string')
 const path = require('path')
 const validator = require('validator')
 const manga = require('./manga')
+const moment = require('moment')
+const pdfmake = require('./plugin/js/index')
 
 // Require the framework and instantiate it
 const fastify = require('fastify')({
@@ -128,19 +130,31 @@ const download = async (url, path) => {
     })
   }
 
+/* const createDir = async (dir) => {
+    await !fs.existsSync(dir) && await fs.mkdirSync(dir)
+} */
+
+/* const createDir = (path) => {
+    // check if dir exist
+    fs.stat(path, (err, stats) => {
+        if (stats.isDirectory()) {
+            // do nothing
+        } else {
+            // if the given path is not a directory, create a directory
+            fs.mkdirSync(path)
+        }
+    })
+} */
 
 // Declare a route
 fastify.get('/', async (request, reply) => {
     const urlData = request.urlData()
     const parsed = queryString.parse(urlData.query)
-    let getChapter = {
+    let getImages = {
         id: null,
         url: null,
         pages: []
     }
-    // let getInfo = {
-
-    // }
 
     if (!parsed.url) {
         return reply.code(401).send({
@@ -162,11 +176,11 @@ fastify.get('/', async (request, reply) => {
     try {
         getImages = await poketo.getChapter(getUrl)
 
-        return reply.code(200).send({
+        /* return reply.code(200).send({
             error: false,
             message: "OK",
             data: getImages
-        })
+        }) */
     } catch (error) {
         if (error.code === "UNSUPPORTED_SITE") {
             poketoNotSupport = true
@@ -194,7 +208,6 @@ fastify.get('/', async (request, reply) => {
                 message: error
             })
         }
-        
 
         return reply.code(200).send({
             error: false,
@@ -203,9 +216,15 @@ fastify.get('/', async (request, reply) => {
         })
     }
 
-    /* if (getChapter.pages.length > 0) {
+    // console.log(getImages)
+
+    const getCurrentTimestamp = moment().format('x')
+    const getChapter = getImages.pages || []
+    const getSiteId = getImages.id.split(':')[0]
+    let pdfImage = []
+    if (getChapter.length > 0) {
         let idx = 0
-        for (const page of getChapter.pages) {
+        for (const page of getChapter) {
             let fileNumber = idx
             if (idx < 10) {
                 fileNumber = '00' + idx
@@ -214,16 +233,38 @@ fastify.get('/', async (request, reply) => {
             }
             const getExt = path.extname(page.id) || '.jpg'
             const filename = fileNumber + getExt
+            const getDir = path.join(__dirname, 'temp', getSiteId, getCurrentTimestamp)
+            const getFullpath = path.join(getDir, filename)
 
-            // await download(page.url, './temp/' + filename)
+            await fs.promises.mkdir(getDir, { recursive: true })
+
+            await download(page.url, getFullpath)
+
+            pdfImage.push({
+                image: getFullpath
+            })
             idx++
         }
-        
-    } */
+
+        const docDefinition = {
+            content: pdfImage 
+        }
     
+        var pdf = pdfmake.createPdf(docDefinition);
+        pdf.write('temp/images.pdf').then(() => {
+            console.log(new Date() - now);
+        }, err => {
+            console.error(err);
+        })
+    }
+
+    // pdfDoc = pdfmake.createPdfKitDocument(pdf)
+    // pdfDoc.pipe(fs.createWriteStream('temp/images.pdf'))
+    // pdfDoc.end()
 
     return {
-        message: 'Hello',
+        error: false,
+        message: 'OK',
         data: {
             // list: getImages
             // a: getChapter,

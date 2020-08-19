@@ -42,9 +42,14 @@ const KomikcastAdapter = {
         const dom = cheerio.load(html.body)
 
         const $readerArea = dom('#readerarea').first()
-        const $imageDom = $readerArea.find('img')
+        let $imageDom = $readerArea.find('img[loading]')
+        // console.log($imageDom.length)
+        // $imageDom.get().length == 3 ? $imageDom = $readerArea.find('p img') : ''
 
-        const $imageList = $imageDom.get().map(el => {
+        const $imageList = $imageDom.get().map((el, idx) => {
+
+            console.log('Item ke ' + idx, el)
+
             const $row = dom(el)
             const href = $row.attr('src')
 
@@ -61,11 +66,12 @@ const KomikcastAdapter = {
         const pages = $imageList.filter(x => validator.isURL(x)).map((url, i) => {
             const id = url.split('/').pop().split('#')[0].split('?')[0]
             return { id, url }
-        });
+        })
 
         const seriesId = dom('.allc').first()
         const seriesAHref = seriesId.find('a').attr('href')
-        const getSeriesId = await this.getSeriesId(seriesAHref)
+        // const getSeriesId = await this.getSeriesId(seriesAHref)
+        const getSeriesId = -1
 
         return {
             id: utils.generateId(this.id, getSeriesId, chapterIdPage),
