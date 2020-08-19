@@ -45,23 +45,30 @@ const KomikgueAdapter = {
 
         let $imageList = []
         page.on('response', async response => {
+            const status = response.status()
             const url = response.url()
-            if (response.request().resourceType() === 'image') {
-                response.buffer().then(file => {
-                   const isCDNImage = /^https?:\/\/(www\.)?cdn.mangaku.link/.test(url)
-                   if (isCDNImage) {
-                        const isJPGImage = url.split('.').pop()
-                        if (isJPGImage === 'jpg' || isJPGImage === 'png') {
-                            // console.log('Image url', url)
-                            $imageList.push(encodeURI(url))
-                        }
-                   }
-                       
-                })
+            if ((status >= 300) && (status <= 399)) {
+                // console.log('Redirect from', url, 'to', response.headers()['location'])
             }
+            if (status === 200 || status === 304) {
+                if (response.request().resourceType() === 'image') {
+                    response.buffer().then(file => {
+                       const isCDNImage = /^https?:\/\/(www\.)?cdn.mangaku.link/.test(url)
+                       if (isCDNImage) {
+                            const isJPGImage = url.split('.').pop()
+                            if (isJPGImage === 'jpg' || isJPGImage === 'png') {
+                                // console.log('Image url', url)
+                                $imageList.push(encodeURI(url))
+                            }
+                       }
+                           
+                    })
+                }
+            }
+            
         })
 
-        await page.goto(url)
+        await page.goto(url, { waitUntil: 'networkidle0' })
         await browser.close()
 
         return $imageList
