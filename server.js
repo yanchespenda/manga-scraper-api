@@ -7,11 +7,15 @@ const path = require('path')
 const validator = require('validator')
 const manga = require('./manga')
 const moment = require('moment')
-const pdfmake = require('./plugin/js/index')
+const { PDFDocument } = require('pdf-lib')
 
 // Require the framework and instantiate it
 const fastify = require('fastify')({
-    logger: true
+    logger: true,
+    // https: {
+    //     key: fs.readFileSync(path.join(__dirname, 'ssl', 'local.com.key')),
+    //     cert: fs.readFileSync(path.join(__dirname, 'ssl', 'local.com.cert'))
+    // }
 })
 
 fastify.register(require('fastify-routes'))
@@ -126,25 +130,28 @@ const download = async (url, path) => {
             .on('close', resolve)
             .on('error', console.error)
         })
-      
     })
-  }
+}
 
-/* const createDir = async (dir) => {
-    await !fs.existsSync(dir) && await fs.mkdirSync(dir)
-} */
-
-/* const createDir = (path) => {
-    // check if dir exist
-    fs.stat(path, (err, stats) => {
-        if (stats.isDirectory()) {
-            // do nothing
-        } else {
-            // if the given path is not a directory, create a directory
-            fs.mkdirSync(path)
+const beginDownload = async (pages, dir) => {
+    await fs.promises.mkdir(dir, { recursive: true })
+    return await Promise.all(pages.map(async (page, idx) => {
+        let fileNumber = idx
+        if (idx < 10) {
+            fileNumber = '00' + idx
+        } else if (idx < 100) {
+            fileNumber = '0' + idx
         }
-    })
-} */
+        const getExt = path.extname(page.id) || '.jpg'
+        const filename = fileNumber + getExt
+        const getFullpath = path.join(dir, filename)
+
+        await download(page.url, getFullpath)
+
+        return getFullpath
+    }))
+}
+
 
 // Declare a route
 fastify.get('/', async (request, reply) => {
@@ -176,11 +183,11 @@ fastify.get('/', async (request, reply) => {
     try {
         getImages = await poketo.getChapter(getUrl)
 
-        /* return reply.code(200).send({
+        return reply.code(200).send({
             error: false,
             message: "OK",
             data: getImages
-        }) */
+        })
     } catch (error) {
         if (error.code === "UNSUPPORTED_SITE") {
             poketoNotSupport = true
@@ -218,45 +225,42 @@ fastify.get('/', async (request, reply) => {
 
     // console.log(getImages)
 
-    const getCurrentTimestamp = moment().format('x')
+    /* const getCurrentTimestamp = moment().format('x')
     const getChapter = getImages.pages || []
     const getSiteId = getImages.id.split(':')[0]
     let pdfImage = []
+    const getDir = path.join(__dirname, 'temp', getSiteId, getCurrentTimestamp)
     if (getChapter.length > 0) {
-        let idx = 0
-        for (const page of getChapter) {
-            let fileNumber = idx
-            if (idx < 10) {
-                fileNumber = '00' + idx
-            } else if (idx < 100) {
-                fileNumber = '0' + idx
-            }
-            const getExt = path.extname(page.id) || '.jpg'
-            const filename = fileNumber + getExt
-            const getDir = path.join(__dirname, 'temp', getSiteId, getCurrentTimestamp)
-            const getFullpath = path.join(getDir, filename)
 
-            await fs.promises.mkdir(getDir, { recursive: true })
+        const pathToPDF = path.join(__dirname, 'temp', 'images.pdf')
 
-            await download(page.url, getFullpath)
+        console.log('run: beginDownload')
+        pdfImage = await beginDownload(getChapter, getDir)
+        console.log('check: pdfImage', pdfImage)
 
-            pdfImage.push({
-                image: getFullpath
+        const pdfDoc = await PDFDocument.load(fs.readFileSync(pathToPDF))
+
+        await Promise.all(pdfImage.forEach(async item => {
+            const img = await pdfDoc.embedPng(fs.readFileSync(item))
+            const imagePage = pdfDoc.insertPage(0);
+
+            imagePage.drawImage(img, {
+                x: 0,
+                y: 0,
+                width: imagePage.getWidth(),
+                height: imagePage.getHeight()
             })
-            idx++
-        }
+        }))
 
-        const docDefinition = {
-            content: pdfImage 
-        }
+        const pdfBytes = await pdfDoc.save()
+        const newFilePath = `${path.basename(pathToPDF, '.pdf')}-result.pdf`;
+        fs.writeFileSync(newFilePath, pdfBytes)
     
-        var pdf = pdfmake.createPdf(docDefinition);
-        pdf.write('temp/images.pdf').then(() => {
-            console.log(new Date() - now);
-        }, err => {
-            console.error(err);
-        })
-    }
+        // const pdf = pdfmake.createPdf(docDefinition) 
+        
+        
+        // await pdf.write('temp/images.pdf')
+    } */
 
     // pdfDoc = pdfmake.createPdfKitDocument(pdf)
     // pdfDoc.pipe(fs.createWriteStream('temp/images.pdf'))
