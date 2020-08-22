@@ -27,6 +27,7 @@ Scraping image files from manga website, Based on Poketo style
 * [Maid](https://www.maid.my.id/)
 * [Kiryuu](https://kiryuu.co/)
 * [Mangaku](https://mangaku.pro/)
+* [Mangashiro](https://mangashiro.co/)
 
 
 ## API Endpoint

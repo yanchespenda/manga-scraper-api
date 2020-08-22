@@ -7,6 +7,7 @@ const KomikuAdapter = require('./adapter/komiku')
 const KomikgueAdapter = require('./adapter/komikgue')
 const KiryuuAdapter = require('./adapter/kiryuu')
 const MangakuAdapter = require('./adapter/mangaku')
+const MangashiroAdapter = require('./adapter/mangashiro')
 
 const manga = {
     support: (url) => {
@@ -37,7 +38,15 @@ const manga = {
                 }
             }
 
-            getChapter = await komikcastAdapter.getChapter(url)
+            try {
+                getChapter = await komikcastAdapter.getChapter(url)
+            } catch (error) {
+                console.error('error', error)
+                return reply.code(403).send({
+                    error: true,
+                    message: error
+                })
+            }
         } else
         if (MaidAdapter.supportsUrl(url)) {
             console.log("mangaFound: " + MaidAdapter.name)
@@ -54,7 +63,15 @@ const manga = {
                 }
             }
 
-            getChapter = await MaidAdapter.getChapter(url)
+            try {
+                getChapter = await MaidAdapter.getChapter(url)
+            } catch (error) {
+                console.error('error', error)
+                return reply.code(403).send({
+                    error: true,
+                    message: error
+                })
+            }
         } else
         if (KomikuAdapter.supportsUrl(url)) {
             console.log("mangaFound: " + KomikuAdapter.name)
@@ -71,7 +88,15 @@ const manga = {
                 }
             }
 
-            getChapter = await KomikuAdapter.getChapter(url)
+            try {
+                getChapter = await KomikuAdapter.getChapter(url)
+            } catch (error) {
+                console.error('error', error)
+                return reply.code(403).send({
+                    error: true,
+                    message: error
+                })
+            }
         } else
         if (KomikgueAdapter.supportsUrl(url)) {
             console.log("mangaFound: " + KomikgueAdapter.name)
@@ -88,7 +113,15 @@ const manga = {
                 }
             }
 
-            getChapter = await KomikgueAdapter.getChapter(url)
+            try {
+                getChapter = await KomikgueAdapter.getChapter(url)
+            } catch (error) {
+                console.error('error', error)
+                return reply.code(403).send({
+                    error: true,
+                    message: error
+                })
+            }
         } else
         if (KiryuuAdapter.supportsUrl(url)) {
             console.log("mangaFound: " + KiryuuAdapter.name)
@@ -132,6 +165,31 @@ const manga = {
 
             try {
                 getChapter = await MangakuAdapter.getChapter(url)
+            } catch (error) {
+                console.error('error', error)
+                return reply.code(403).send({
+                    error: true,
+                    message: error
+                })
+            }
+        } else
+        if (MangashiroAdapter.supportsUrl(url)) {
+            console.log("mangaFound: " + MangashiroAdapter.name)
+
+            const matches = utils.pathMatch(
+                url,
+                '/:chapterSlug',
+            )
+
+            if (!matches) {
+                throw {
+                    name: `Unable to parse '${url}'`,
+                    code: `INVALID_URL`,
+                }
+            }
+
+            try {
+                getChapter = await MangashiroAdapter.getChapter(url)
             } catch (error) {
                 console.error('error', error)
                 return reply.code(403).send({
