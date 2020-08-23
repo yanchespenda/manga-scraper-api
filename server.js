@@ -7,15 +7,40 @@ const path = require('path')
 const validator = require('validator')
 const manga = require('./manga')
 const moment = require('moment')
-const { PDFDocument } = require('pdf-lib')
+const {
+    PDFDocument
+} = require('pdf-lib')
+const {
+    AmazonWebServicesS3Storage
+} = require('./fixer/S3Adapter')
+const {
+    StorageManager
+} = require('@slynova/flydrive')
+
+const storage = new StorageManager({
+    default: 'wasabi',
+    disks: {
+        wasabi: {
+            driver: 's3',
+            config: {
+                key: process.env.S3_KEY,
+                endpoint: process.env.S3_ENDPOINT,
+                secret: process.env.S3_SECRET,
+                bucket: process.env.S3_BUCKET,
+                region: process.env.S3_REGION,
+            }
+        }
+    }
+})
+storage.registerDriver('s3', AmazonWebServicesS3Storage)
 
 // Require the framework and instantiate it
 const fastify = require('fastify')({
     logger: true,
-    // https: {
-    //     key: fs.readFileSync(path.join(__dirname, 'ssl', 'local.com.key')),
-    //     cert: fs.readFileSync(path.join(__dirname, 'ssl', 'local.com.cert'))
-    // }
+    /* https: {
+        key: fs.readFileSync(path.join(__dirname, 'ssl', 'local.com.key')),
+        cert: fs.readFileSync(path.join(__dirname, 'ssl', 'local.com.cert'))
+    } */
 })
 
 fastify.register(require('fastify-routes'))
@@ -122,19 +147,13 @@ fastify.register(require('fastify-cors'), {
 //     }
 // )
 
-const download = async (url, path) => {
-    request.head(url, async (err, res, body) => {
-        await new Promise((resolve, reject) => {
-            request(url)
-            .pipe(fs.createWriteStream(path))
-            .on('close', resolve)
-            .on('error', console.error)
-        })
-    })
-}
+const downloadFile = require('./download')
 
 const beginDownload = async (pages, dir) => {
-    await fs.promises.mkdir(dir, { recursive: true })
+    await fs.promises.mkdir(dir, {
+        recursive: true
+    })
+
     return await Promise.all(pages.map(async (page, idx) => {
         let fileNumber = idx
         if (idx < 10) {
@@ -146,10 +165,24 @@ const beginDownload = async (pages, dir) => {
         const filename = fileNumber + getExt
         const getFullpath = path.join(dir, filename)
 
-        await download(page.url, getFullpath)
+        await downloadFile(page.url, getFullpath)
 
         return getFullpath
     }))
+}
+
+const deleteFolderRecursive = function (pathDir) {
+    if (fs.existsSync(pathDir)) {
+        fs.readdirSync(pathDir).forEach((file, index) => {
+            const curPath = path.join(pathDir, file)
+            if (fs.lstatSync(curPath).isDirectory()) { // recurse
+                deleteFolderRecursive(curPath)
+            } else { // delete file
+                fs.unlinkSync(curPath)
+            }
+        })
+        fs.rmdirSync(pathDir)
+    }
 }
 
 
@@ -182,12 +215,6 @@ fastify.get('/', async (request, reply) => {
     let poketoNotSupport = false
     try {
         getImages = await poketo.getChapter(getUrl)
-
-        return reply.code(200).send({
-            error: false,
-            message: "OK",
-            data: getImages
-        })
     } catch (error) {
         if (error.code === "UNSUPPORTED_SITE") {
             poketoNotSupport = true
@@ -215,33 +242,23 @@ fastify.get('/', async (request, reply) => {
                 message: error
             })
         }
-
-        return reply.code(200).send({
-            error: false,
-            message: "OK",
-            data: getImages
-        })
     }
 
-    // console.log(getImages)
-
-    /* const getCurrentTimestamp = moment().format('x')
+    const getCurrentTimestamp = moment().format('x')
     const getChapter = getImages.pages || []
     const getSiteId = getImages.id.split(':')[0]
     let pdfImage = []
     const getDir = path.join(__dirname, 'temp', getSiteId, getCurrentTimestamp)
     if (getChapter.length > 0) {
 
-        const pathToPDF = path.join(__dirname, 'temp', 'images.pdf')
-
-        console.log('run: beginDownload')
+        // console.log('run: beginDownload')
         pdfImage = await beginDownload(getChapter, getDir)
-        console.log('check: pdfImage', pdfImage)
+        // console.log('check: pdfImage', pdfImage)
 
-        const pdfDoc = await PDFDocument.load(fs.readFileSync(pathToPDF))
+        const pdfDoc = await PDFDocument.create()
 
-        await Promise.all(pdfImage.forEach(async item => {
-            const img = await pdfDoc.embedPng(fs.readFileSync(item))
+        for (const item of pdfImage) {
+            const img = await pdfDoc.embedJpg(fs.readFileSync(item))
             const imagePage = pdfDoc.insertPage(0);
 
             imagePage.drawImage(img, {
@@ -250,31 +267,29 @@ fastify.get('/', async (request, reply) => {
                 width: imagePage.getWidth(),
                 height: imagePage.getHeight()
             })
-        }))
+        }
 
         const pdfBytes = await pdfDoc.save()
-        const newFilePath = `${path.basename(pathToPDF, '.pdf')}-result.pdf`;
-        fs.writeFileSync(newFilePath, pdfBytes)
-    
-        // const pdf = pdfmake.createPdf(docDefinition) 
-        
-        
-        // await pdf.write('temp/images.pdf')
-    } */
+        const pdfBuffer = Buffer.from(pdfBytes)
 
-    // pdfDoc = pdfmake.createPdfKitDocument(pdf)
-    // pdfDoc.pipe(fs.createWriteStream('temp/images.pdf'))
-    // pdfDoc.end()
+        const wasabiFilename = 'manga-pdf-generator/' + getSiteId + '-' + getCurrentTimestamp + '.pdf'
+
+        await storage.disk('wasabi').put(wasabiFilename, pdfBuffer)
+        const uri = await storage.disk('wasabi').getSignedUrl(wasabiFilename, { Expiry: 60 * 10, expiry: 60 * 10 })
+
+        deleteFolderRecursive(getDir)
+
+        return {
+            error: false,
+            message: 'Success',
+            data: uri.signedUrl
+        }
+    }
 
     return {
-        error: false,
-        message: 'OK',
-        data: {
-            // list: getImages
-            // a: getChapter,
-            // urlData: urlData,
-            // getInfo: getInfo
-        }
+        error: true,
+        message: 'Do nothing',
+        data: null
     }
 })
 
@@ -285,7 +300,9 @@ fastify.get('/drive', async (request, reply) => {
 
 // Run the server!
 const start = async () => {
+    // console.log(storage.disk('wasabi'))
     try {
+        
         await fastify.listen(PORT, '0.0.0.0')
         fastify.log.info(`server listening on ${fastify.server.address().port}`)
     } catch (err) {
