@@ -45,12 +45,14 @@ S3_REGION=
 https://manga-scraper-api.herokuapp.com/
 ```
 
-| Parameters | Type   | Description   |
-|------------|--------|---------------|
-| url        | string | Full url site |
+| Parameters | Type    | Description                           |
+|------------|---------|---------------------------------------|
+| url        | string  | Full url site                         |
+| pdf        | boolean | Generated PDF and upload to s3 server |
 
 ### Response API
 ```
+// without pdf param
 {
     error: (true|false),
     message: (string),
@@ -65,6 +67,13 @@ https://manga-scraper-api.herokuapp.com/
             ...
         ]
     }
+}
+
+// wit pdf param
+{
+    error: (true|false),
+    message: (string),
+    data: (string) // Signed URL s3, expire in 10 minutes
 }
 ```
  

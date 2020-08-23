@@ -205,6 +205,8 @@ fastify.get('/', async (request, reply) => {
 
     const getUrl = parsed.url
 
+    const isGeneratedPdf = parsed.pdf
+
     if (!validator.isURL(getUrl)) {
         return reply.code(401).send({
             error: true,
@@ -241,6 +243,14 @@ fastify.get('/', async (request, reply) => {
                 error: true,
                 message: error
             })
+        }
+    }
+
+    if (!isGeneratedPdf) {
+        return {
+            error: false,
+            message: 'Success',
+            data: getImages
         }
     }
 
