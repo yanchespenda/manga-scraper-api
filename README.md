@@ -29,6 +29,16 @@ Scraping image files from manga website, Based on Poketo style
 * [Mangaku](https://mangaku.pro/)
 * [Mangashiro](https://mangashiro.co/)
 
+## ENV Required
+For using s3 driver to upload pdf files, you need some env to make it well
+```
+S3_KEY=
+S3_ENDPOINT=
+S3_SECRET=
+S3_BUCKET=
+S3_REGION=
+```
+
 
 ## API Endpoint
 ```
