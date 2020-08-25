@@ -15,7 +15,7 @@ import KiryuuAdapter from './adapter/kiryuu';
 import MangakuAdapter from './adapter/mangaku';
 import MangashiroAdapter from './adapter/mangashiro';
 
-import { mangaServicesResponse } from "../../interface/MangaInterface";
+import { mangaServicesResponse } from '../../interface/MangaInterface';
 
 export class MangaService {
 	constructor() {}
@@ -224,9 +224,7 @@ export class MangaService {
 		);
 	}
 
-	async generatePDF() {
-		
-	}
+	async generatePDF() {}
 
 	async runScraping(reply: FastifyReply, url: string) {
 		let responseManga: mangaServicesResponse = {
@@ -235,7 +233,7 @@ export class MangaService {
 			pages: [],
 		};
 		let poketoNotSupport = false;
-	
+
 		try {
 			responseManga = await poketo.getChapter(url);
 		} catch (error) {
@@ -257,7 +255,7 @@ export class MangaService {
 					message: 'Website not support',
 				});
 			}
-	
+
 			try {
 				responseManga = await this.get(url);
 			} catch (error) {
@@ -269,6 +267,6 @@ export class MangaService {
 			}
 		}
 
-		return responseManga
+		return responseManga;
 	}
 }

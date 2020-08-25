@@ -12,8 +12,8 @@ export interface IManga extends Document {
 	imageList: Array<mangaServicesResponsePages>;
 	pdfLink: string;
 
-	createdAt: Date;
-	updatedAt: Date;
+	createdAt: string | number | Date;
+	updatedAt: string | number | Date;
 }
 
 const mangaSchema = new Schema({
@@ -22,11 +22,11 @@ const mangaSchema = new Schema({
 	chapterId: Number,
 	chapterUrl: {
 		type: String,
-		index: true
+		index: true,
 	},
 	fullMangaId: {
 		type: String,
-		index: true
+		index: true,
 	},
 
 	imageList: [
