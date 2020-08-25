@@ -11,7 +11,6 @@ import FastifyMultipart from 'fastify-multipart';
 
 import mangaRoutes from './routes/mangaRoute';
 import { config } from './config';
-// const env = process.env.NODE_ENV
 
 const server = fastify({ logger: true });
 
@@ -47,7 +46,7 @@ mangaRoutes.forEach(route => {
 
 const start = async (): Promise<void> => {
 	try {
-		await server.listen(config.app.port, '0.0.0.0' );
+		await server.listen(config.app.port, '0.0.0.0');
 		console.log('Server listening');
 	} catch (err) {
 		server.log.error(err);
