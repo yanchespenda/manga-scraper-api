@@ -39,10 +39,15 @@ S3_BUCKET=
 S3_REGION=
 ```
 
+For saving list data to mongodb database
+```
+MONGO_URI=
+```
+
 
 ## API Endpoint
 ```
-https://manga-scraper-api.herokuapp.com/
+https://manga-scraper-api.herokuapp.com/api/manga
 ```
 
 | Parameters | Type    | Description                           |
