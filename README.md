@@ -28,6 +28,9 @@ Scraping image files from manga website, Based on Poketo style
 * [Kiryuu](https://kiryuu.co/)
 * [Mangaku](https://mangaku.pro/)
 * [Mangashiro](https://mangashiro.co/)
+* [Komikindo](https://komikindo.web.id/)
+* [Mangadop](https://mangadop.info/)
+* [Mangaindo](https://mangaindo.web.id/)
 
 ## ENV Required
 For using s3 driver to upload pdf files, you need some env to make it well
@@ -53,11 +56,10 @@ https://manga-scraper-api.herokuapp.com/api/manga
 | Parameters | Type    | Description                           |
 |------------|---------|---------------------------------------|
 | url        | string  | Full url site                         |
-| pdf        | boolean | Generated PDF and upload to s3 server |
+| proxy      | boolean | Serve all image with proxy            |
 
 ### Response API
 ```
-// without pdf param
 {
     error: (true|false),
     message: (string),
@@ -72,13 +74,6 @@ https://manga-scraper-api.herokuapp.com/api/manga
             ...
         ]
     }
-}
-
-// wit pdf param
-{
-    error: (true|false),
-    message: (string),
-    data: (string) // Signed URL s3, expire in 10 minutes
 }
 ```
  

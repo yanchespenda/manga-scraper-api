@@ -16,4 +16,8 @@ export const config = {
 	db: {
 		mongoURI: mongoURI,
 	},
+
+	pdf: {
+		url: 900
+	}
 };

@@ -7,12 +7,18 @@ const getMangaRoute: RouteOptions = {
 	handler: MangaController.getManga,
 };
 
-const createMangaRoute: RouteOptions = {
+const getDownloadRoute: RouteOptions = {
+	method: 'GET',
+	url: '/api/download',
+	handler: MangaController.getDownload,
+};
+
+/* const createMangaRoute: RouteOptions = {
 	method: 'POST',
 	url: '/api/manga',
 	handler: MangaController.createManga,
-};
+}; */
 
-const routes = [getMangaRoute, createMangaRoute];
+const routes = [getMangaRoute, getDownloadRoute];
 
 export default routes;
