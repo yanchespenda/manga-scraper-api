@@ -105,11 +105,7 @@ export const getManga = async (request: FastifyRequest, reply: FastifyReply) => 
 	return reply.send({
 		error: false,
 		message: 'Success',
-		data: {
-			proxy: useProxy,
-			hostName: request.hostname,
-			responseManga
-		},
+		data: responseManga,
 	});
 };
 
