@@ -8,6 +8,14 @@ import boom from '@hapi/boom';
 import {
     FastifyReply
 } from 'fastify';
+import sharp from "sharp";
+import {
+    mangaServicesResponse
+} from '../../interface/MangaInterface';
+import moment from 'moment';
+import { AmazonWebServicesS3Storage } from "../../patch/S3Adapter";
+import { StorageManager } from "@slynova/flydrive";
+import { PDFDocument } from "pdf-lib";
 
 import komikcastAdapter from './adapter/komikcast';
 import MaidAdapter from './adapter/maid';
@@ -21,12 +29,29 @@ import KomikindoAdapter from './adapter/komikindo';
 import MangaindoAdapter from './adapter/mangaindo';
 import MangakyoAdapter from './adapter/mangakyo';
 
-import {
-    mangaServicesResponse
-} from '../../interface/MangaInterface';
+import { config } from "../../config";
+
+const storage = new StorageManager({
+    default: 'wasabi',
+    disks: {
+        wasabi: {
+            driver: 's3',
+            config: {
+                key: config.s3.key,
+                endpoint: config.s3.endpoint,
+                secret: config.s3.secret,
+                bucket: config.s3.bucket,
+                region: config.s3.region,
+            }
+        }
+    }
+})
+const S3Adapter: any = AmazonWebServicesS3Storage
+storage.registerDriver('s3', S3Adapter)
+
 
 export class MangaService {
-    constructor() {}
+    // constructor() { }
 
     support(url) {
         if (!supports(url)) {
@@ -315,12 +340,51 @@ export class MangaService {
 
                 await this.downloadFile(page.url, getFullpath);
 
-                return getFullpath;
+                return await sharp(getFullpath).jpeg().toBuffer();
             }),
         );
     }
 
-    async generatePDF() {}
+    async generatePDF(id: string, imageList: any, dbId: string) {
+        const tempDir = path.join(__dirname, 'temp')
+        this.deleteExpiredFiles(tempDir)
+
+        const getCurrentTimestamp = moment().format('x')
+        const getDir = path.join(__dirname, 'temp', id, getCurrentTimestamp)
+        const pdfImage: any = await this.beginDownload(imageList, getDir)
+        const pdfDoc = await PDFDocument.create()
+        
+        for (const item of pdfImage) {
+            const img = await pdfDoc.embedJpg(item)
+            const imagePage = pdfDoc.insertPage(0);
+
+            imagePage.drawImage(img, {
+                x: 0,
+                y: 0,
+                width: imagePage.getWidth(),
+                height: imagePage.getHeight()
+            })
+        }
+
+        const pdfBytes = await pdfDoc.save()
+        const pdfBuffer = Buffer.from(pdfBytes)
+        const wasabiFilename = 'manga-pdf-generator/' + id + '-' + dbId + '.pdf'
+
+        await storage.disk('wasabi').put(wasabiFilename, pdfBuffer)
+
+        this.deleteFolderRecursive(getDir)
+
+        return wasabiFilename
+    }
+
+    async generatePDFDownloadLink(pdfLink: string) {
+        const uri = await storage.disk('wasabi').getSignedUrl(pdfLink, { expiry: 60 * 10 })
+
+        if (uri) {
+            return uri.signedUrl
+        }
+        return ""
+    }
 
     async runScraping(reply: FastifyReply, url: string): Promise<mangaServicesResponse> {
         let responseManga: mangaServicesResponse = {
