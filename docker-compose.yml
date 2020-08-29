@@ -3,4 +3,4 @@ services:
   web:
     build: .
     ports:
-      - "3000:3080"
+      - "8080:8080"
