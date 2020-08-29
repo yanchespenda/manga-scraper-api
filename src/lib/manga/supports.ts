@@ -9,6 +9,7 @@ const supportedDomains = [
 	'mangadop.info',
 	'komikindo.web.id',
 	'mangaindo.web.id',
+	'mangakyo.me',
 ];
 
 export default url => supportedDomains.some(str => url.indexOf(str) !== -1);

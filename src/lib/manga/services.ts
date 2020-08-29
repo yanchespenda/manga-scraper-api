@@ -19,6 +19,7 @@ import MangashiroAdapter from './adapter/mangashiro';
 import MangadopAdapter from './adapter/mangadop';
 import KomikindoAdapter from './adapter/komikindo';
 import MangaindoAdapter from './adapter/mangaindo';
+import MangakyoAdapter from './adapter/mangakyo';
 
 import {
     mangaServicesResponse
@@ -210,9 +211,26 @@ export class MangaService {
             } catch (error) {
                 console.error('error', error);
             }
+        } else if (MangakyoAdapter.supportsUrl(url)) {
+            console.log('mangaFound: ' + MangakyoAdapter.name);
+
+            const matches = utils.pathMatch(url, '/:chapterSlug');
+
+            if (!matches) {
+                throw {
+                    name: `Unable to parse '${url}'`,
+                    code: 'INVALID_URL',
+                };
+            }
+
+            try {
+                getChapter = await MangakyoAdapter.getChapter(url);
+            } catch (error) {
+                console.error('error', error);
+            }
         }
 
-        //MangaindoAdapter
+        //MangakyoAdapter
         return getChapter;
     }
 
