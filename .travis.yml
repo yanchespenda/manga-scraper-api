@@ -6,13 +6,13 @@ branches:
   only:
     - master
 cache:
-  npm: true
+  yarn: true
 services:
   - mongodb
 before_script:
-  - npm install
+  - yarn install
 os:
   - linux
 script:
-  - npm test
-  - npm run coverage
+  - yarn test
+  - yarn run coverage
