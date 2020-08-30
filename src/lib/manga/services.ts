@@ -347,7 +347,11 @@ export class MangaService {
 
     async generatePDF(id: string, imageList: any, dbId: string) {
         const tempDir = path.join(__dirname, 'temp')
-        this.deleteExpiredFiles(tempDir)
+        try {
+            this.deleteExpiredFiles(tempDir)
+        } catch (error) {
+            console.log('Failed to deleteExpiredFiles', error)
+        }
 
         const getCurrentTimestamp = moment().format('x')
         const getDir = path.join(__dirname, 'temp', id, getCurrentTimestamp)
