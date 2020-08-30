@@ -266,7 +266,7 @@ export class MangaService {
     deleteFolderRecursive(pathDir) {
         if (fs.existsSync(pathDir)) {
             const getFiles = fs.readdirSync(pathDir)
-            if (getFiles.length > 0) {
+            if (getFiles && getFiles.length > 0) {
                 for (const file of getFiles) {
                     const curPath = path.join(pathDir, file);
                     if (fs.lstatSync(curPath).isDirectory()) {
@@ -282,8 +282,8 @@ export class MangaService {
     deleteExpiredFiles(pathDir) {
         fs.readdir(pathDir, (err, files) => {
             if (err) console.log(err)
-            console.log(files)
-            if (files.length > 0) {
+            
+            if (files && files.length > 0) {
                 for (const file of files) {
                     fs.stat(path.join(pathDir, file), function (err, stat) {
                         var endTime, now;
