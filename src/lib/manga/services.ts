@@ -282,20 +282,22 @@ export class MangaService {
 
     deleteExpiredFiles(pathDir) {
         fs.readdir(pathDir, (err, files) => {
-			if (err) console.log(err)
-            files.forEach(file => {
-                fs.stat(path.join(pathDir, file), function (err, stat) {
-                    var endTime, now;
-                    if (err) {
-                        return console.error(err);
-                    }
-                    now = new Date().getTime();
-                    endTime = new Date(stat.ctime).getTime() + 3600000;
-                    if (now > endTime) {
-                        return fs.unlinkSync(path.join(pathDir, file));
-                    }
+            if (err) console.log(err)
+            if (files.length > 0) {
+                files.forEach(file => {
+                    fs.stat(path.join(pathDir, file), function (err, stat) {
+                        var endTime, now;
+                        if (err) {
+                            return console.error(err);
+                        }
+                        now = new Date().getTime();
+                        endTime = new Date(stat.ctime).getTime() + 3600000;
+                        if (now > endTime) {
+                            return fs.unlinkSync(path.join(pathDir, file));
+                        }
+                    });
                 });
-            });
+            }
         });
     }
 
