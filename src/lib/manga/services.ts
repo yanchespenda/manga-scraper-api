@@ -265,15 +265,18 @@ export class MangaService {
 
     deleteFolderRecursive(pathDir) {
         if (fs.existsSync(pathDir)) {
-            fs.readdirSync(pathDir).forEach(file => {
-                const curPath = path.join(pathDir, file);
-                if (fs.lstatSync(curPath).isDirectory()) {
-                    this.deleteFolderRecursive(curPath);
-                } else {
-                    fs.unlinkSync(curPath);
-                }
-            });
-            fs.rmdirSync(pathDir);
+            const getFiles = fs.readdirSync(pathDir)
+            if (getFiles.length > 0) {
+                getFiles.forEach(file => {
+                    const curPath = path.join(pathDir, file);
+                    if (fs.lstatSync(curPath).isDirectory()) {
+                        this.deleteFolderRecursive(curPath);
+                    } else {
+                        fs.unlinkSync(curPath);
+                    }
+                });
+                // fs.rmdirSync(pathDir);
+            }
         }
     }
 
