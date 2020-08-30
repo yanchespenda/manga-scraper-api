@@ -267,15 +267,14 @@ export class MangaService {
         if (fs.existsSync(pathDir)) {
             const getFiles = fs.readdirSync(pathDir)
             if (getFiles.length > 0) {
-                getFiles.forEach(file => {
+                for (const file of getFiles) {
                     const curPath = path.join(pathDir, file);
                     if (fs.lstatSync(curPath).isDirectory()) {
                         this.deleteFolderRecursive(curPath);
                     } else {
                         fs.unlinkSync(curPath);
                     }
-                });
-                // fs.rmdirSync(pathDir);
+                }
             }
         }
     }
@@ -283,8 +282,9 @@ export class MangaService {
     deleteExpiredFiles(pathDir) {
         fs.readdir(pathDir, (err, files) => {
             if (err) console.log(err)
+            console.log(files)
             if (files.length > 0) {
-                files.forEach(file => {
+                for (const file of files) {
                     fs.stat(path.join(pathDir, file), function (err, stat) {
                         var endTime, now;
                         if (err) {
@@ -296,7 +296,7 @@ export class MangaService {
                             return fs.unlinkSync(path.join(pathDir, file));
                         }
                     });
-                });
+                }
             }
         });
     }
