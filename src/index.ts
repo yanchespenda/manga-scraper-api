@@ -47,7 +47,7 @@ mangaRoutes.forEach(route => {
 const start = async (): Promise<void> => {
 	try {
 		await server.listen(config.app.port, '0.0.0.0');
-		console.log('Server listening');
+		console.log('Server listening', process.cwd());
 	} catch (err) {
 		server.log.error(err);
 		process.exit(1);

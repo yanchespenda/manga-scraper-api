@@ -346,7 +346,8 @@ export class MangaService {
     }
 
     async generatePDF(id: string, imageList: any, dbId: string) {
-        const tempDir = path.join(__dirname, 'temp')
+        const rootDir = path.join(process.cwd())
+        const tempDir = path.join(rootDir, 'temp')
         try {
             this.deleteExpiredFiles(tempDir)
         } catch (error) {
@@ -354,7 +355,7 @@ export class MangaService {
         }
 
         const getCurrentTimestamp = moment().format('x')
-        const getDir = path.join(__dirname, 'temp', id, getCurrentTimestamp)
+        const getDir = path.join(tempDir, id, getCurrentTimestamp)
         const pdfImage: any = await this.beginDownload(imageList, getDir)
         const pdfDoc = await PDFDocument.create()
         
