@@ -2,5 +2,5 @@ node_modules
 lib
 !src/lib
 dist
-temp
+temp/*
 setting.txt
