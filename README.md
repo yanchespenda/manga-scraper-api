@@ -59,8 +59,21 @@ https://manga-scraper-api.herokuapp.com/api/manga
 | url        | string  | Full url site                         |
 | proxy      | boolean | Serve all image with proxy            |
 
+
+```
+https://manga-scraper-api.herokuapp.com/api/download
+```
+
+Scraping image and generate pdf
+
+| Parameters | Type    | Description                           |
+|------------|---------|---------------------------------------|
+| url        | string  | Full url site                         |
+ 
+
 ### Response API
 ```
+// /api/manga
 {
     error: (true|false),
     message: (string),
@@ -76,5 +89,11 @@ https://manga-scraper-api.herokuapp.com/api/manga
         ]
     }
 }
+
+// /api/download
+{
+    error: (true|false),
+    message: (string),
+    data: (string)
+}
 ```
- 
