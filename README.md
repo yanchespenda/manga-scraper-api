@@ -57,7 +57,7 @@ https://manga-scraper-api.herokuapp.com/api/manga
 | Parameters | Type    | Description                           |
 |------------|---------|---------------------------------------|
 | url        | string  | Full url site                         |
-| proxy      | boolean | Serve all image with proxy            |
+| proxy?     | boolean | Serve all image with proxy            |
 
 
 ```
@@ -69,6 +69,16 @@ Scraping image and generate pdf
 | Parameters | Type    | Description                           |
 |------------|---------|---------------------------------------|
 | url        | string  | Full url site                         |
+
+```
+https://manga-scraper-api.herokuapp.com/api/proxy
+```
+Proxy image with converting to webp image
+
+| Parameters | Type    | Description                           |
+|------------|---------|---------------------------------------|
+| mangaId    | string  | Manga Id                              |
+| pageId     | string  | Image Id                              |
  
 
 ### Response API
