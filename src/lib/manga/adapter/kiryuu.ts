@@ -61,10 +61,10 @@ const KomikcastAdapter = {
 				return { id, url };
 			});
 
-		// const seriesId = dom('.allc').first()
-		// const seriesAHref = seriesId.find('a').attr('href')
-		// const getSeriesId = await this.getSeriesId(seriesAHref)
-		const getSeriesId = -1;
+		const seriesId = dom('.allc').first()
+		const seriesAHref = seriesId.find('a').attr('href')
+		const getSeriesId = await this.getSeriesId(seriesAHref)
+		// const getSeriesId = -1;
 
 		return {
 			id: utils.generateId(this.id, getSeriesId, chapterIdPage),
