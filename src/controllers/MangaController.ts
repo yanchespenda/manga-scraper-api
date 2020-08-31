@@ -2,11 +2,13 @@ import MangaSchema from '../models/MangaSchema';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { MangaService } from '../lib/manga/services';
 import moment from 'moment';
-import { mangaServicesResponse } from '../interface/MangaInterface';
+import { mangaServicesResponse, mangaServicesResponsePages } from '../interface/MangaInterface';
 import { config } from '../config';
 
 export const getManga = async (request: FastifyRequest, reply: FastifyReply) => {
 	const query: any = request.query;
+
+	// console.log('Protocol Raw:', request.connection)
 
 	if (!query.url) {
 		return reply.code(400).send({
@@ -222,6 +224,53 @@ export const getDownload = async (request: FastifyRequest, reply: FastifyReply) 
 		message: 'Success',
 		data: PDFLink,
 	});
+}
+
+export const getProxy = async (request: FastifyRequest, reply: FastifyReply) => {
+	const query: any = request.query;
+
+	if (!query.mangaId || !query.pageId) {
+		return reply.code(400).send({
+			error: true,
+			message: 'Query url is missing',
+		});
+	}
+
+	const getMangaId = query.mangaId
+	const getPageId = query.pageId
+	let pageURL: mangaServicesResponsePages = {
+		id: '',
+		url: ''
+	}
+	let isMangaFound = false
+
+	try {
+		const mangaSchema = await MangaSchema.findOne({
+			_id: getMangaId,
+			"imageList._id": getPageId
+		}).select({ "imageList.$": 1 })
+		if (mangaSchema) {
+			isMangaFound = true
+			pageURL = mangaSchema.imageList[0]
+		}
+	} catch (error) {}
+
+	if (!isMangaFound) {
+		return reply.code(404).send({
+			error: true,
+			message: 'Data not found',
+		});
+	}
+
+	const mangaService = new MangaService();
+
+	const getImage = await mangaService.proxyImage(pageURL.url)
+
+	return reply
+		.code(200)
+		.header('Content-Type', 'image/webp')
+		.header('Cache-Control', 'public, no-transform, immutable, max-age=2592000')
+		.send(getImage);
 }
 
 /* export const createManga = async (request: FastifyRequest, reply: FastifyReply) => {

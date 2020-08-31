@@ -13,12 +13,18 @@ const getDownloadRoute: RouteOptions = {
 	handler: MangaController.getDownload,
 };
 
+const getProxyRoute: RouteOptions = {
+	method: 'GET',
+	url: '/api/proxy',
+	handler: MangaController.getProxy,
+};
+
 /* const createMangaRoute: RouteOptions = {
 	method: 'POST',
 	url: '/api/manga',
 	handler: MangaController.createManga,
 }; */
 
-const routes = [getMangaRoute, getDownloadRoute];
+const routes = [getMangaRoute, getDownloadRoute, getProxyRoute];
 
 export default routes;

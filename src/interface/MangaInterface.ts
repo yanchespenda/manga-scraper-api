@@ -16,3 +16,8 @@ export interface mangaResponse {
 
 	data?: any;
 }
+
+export interface mangaQueryParams {
+	url?: string;
+	proxy?: string;
+}

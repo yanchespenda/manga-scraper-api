@@ -396,6 +396,19 @@ export class MangaService {
         return ""
     }
 
+    async getImageBinary(url) {
+        return axios
+        .get(url, {
+            responseType: 'arraybuffer'
+        })
+        .then(response => Buffer.from(response.data, 'binary'))
+    }
+
+    async proxyImage(url) {
+        const getBinary: any = await this.getImageBinary(url)
+        return await sharp(getBinary).webp().toBuffer();
+    }
+
     async runScraping(reply: FastifyReply, url: string): Promise<mangaServicesResponse> {
         let responseManga: mangaServicesResponse = {
             id: '',
