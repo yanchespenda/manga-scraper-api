@@ -52,12 +52,6 @@ export const postStart = async (_request: FastifyRequest, _reply: FastifyReply) 
     } catch (error) {}
 
     const mangaService = new MangaService();
-    if (!mangaService.support(url)) {
-        return _reply.code(400).send({
-            error: true,
-            message: 'Site not support',
-        });
-    }
 
     if (!isMangaFound) {
         const responseManga: mangaServicesResponse = await mangaService.runScraping(_reply, url);

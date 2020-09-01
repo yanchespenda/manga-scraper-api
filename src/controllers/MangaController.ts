@@ -64,13 +64,6 @@ export const getManga = async (request: FastifyRequest, reply: FastifyReply) => 
 	} catch (error) {}
 
 	const mangaService = new MangaService();
-
-	if (!mangaService.support(url)) {
-		return reply.code(400).send({
-			error: true,
-			message: 'Site not support',
-		});
-	}
 	
 	if (!isMangaFound) {
 		responseManga = await mangaService.runScraping(reply, url);
@@ -185,13 +178,6 @@ export const getDownload = async (request: FastifyRequest, reply: FastifyReply) 
 	} catch (error) { }
 
 	const mangaService = new MangaService();
-
-	if (!mangaService.support(url)) {
-		return reply.code(400).send({
-			error: true,
-			message: 'Site not support',
-		});
-	}
 
 	if (!isMangaFound) {
 		imageList = await mangaService.runScraping(reply, url);
