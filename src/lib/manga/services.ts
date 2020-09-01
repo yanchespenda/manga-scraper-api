@@ -51,7 +51,23 @@ storage.registerDriver('s3', S3Adapter)
 
 
 export class MangaService {
-    // constructor() { }
+    private adapterList: Array<any> = []
+
+    constructor() {
+        this.adapterList = [
+            komikcastAdapter,
+            MaidAdapter,
+            KomikuAdapter,
+            KomikgueAdapter,
+            KiryuuAdapter,
+            MangakuAdapter,
+            MangashiroAdapter,
+            MangadopAdapter,
+            KomikindoAdapter,
+            MangaindoAdapter,
+            MangakyoAdapter
+        ]
+    }
 
     support(url) {
         if (!supports(url)) {
@@ -66,196 +82,30 @@ export class MangaService {
             url: null,
             pages: [],
         };
-        if (komikcastAdapter.supportsUrl(url)) {
-            console.log('mangaFound: ' + komikcastAdapter.name);
 
-            const matches = utils.pathMatch(url, '/chapter/:chapterSlug');
+        if (this.adapterList.length > 0) {
+            for (const adapter of this.adapterList) {
+                if (adapter.supportsUrl(url)) {
+                    console.log('mangaFound: ' + adapter.name);
 
-            if (!matches) {
-                throw {
-                    name: `Unable to parse '${url}'`,
-                    code: 'INVALID_URL',
-                };
-            }
+                    const matches = adapter.patternChapter(url);
 
-            try {
-                getChapter = await komikcastAdapter.getChapter(url);
-            } catch (error) {
-                console.error('error', error);
-            }
-        } else if (MaidAdapter.supportsUrl(url)) {
-            console.log('mangaFound: ' + MaidAdapter.name);
+                    if (!matches) {
+                        throw {
+                            name: `Unable to parse '${url}'`,
+                            code: 'INVALID_URL',
+                        };
+                    }
 
-            const matches = utils.pathMatch(url, '/:chapterSlug');
-
-            if (!matches) {
-                throw {
-                    name: `Unable to parse '${url}'`,
-                    code: 'INVALID_URL',
-                };
-            }
-
-            try {
-                getChapter = await MaidAdapter.getChapter(url);
-            } catch (error) {
-                console.error('error', error);
-            }
-        } else if (KomikuAdapter.supportsUrl(url)) {
-            console.log('mangaFound: ' + KomikuAdapter.name);
-
-            const matches = utils.pathMatch(url, '/:chapterSlug');
-
-            if (!matches) {
-                throw {
-                    name: `Unable to parse '${url}'`,
-                    code: 'INVALID_URL',
-                };
-            }
-
-            try {
-                getChapter = await KomikuAdapter.getChapter(url);
-            } catch (error) {
-                console.error('error', error);
-            }
-        } else if (KomikgueAdapter.supportsUrl(url)) {
-            console.log('mangaFound: ' + KomikgueAdapter.name);
-
-            const matches = utils.pathMatch(url, '/manga/:seriesSlug/:chapterSlug/:page?');
-
-            if (!matches) {
-                throw {
-                    name: `Unable to parse '${url}'`,
-                    code: 'INVALID_URL',
-                };
-            }
-
-            try {
-                getChapter = await KomikgueAdapter.getChapter(url);
-            } catch (error) {
-                console.error('error', error);
-            }
-        } else if (KiryuuAdapter.supportsUrl(url)) {
-            console.log('mangaFound: ' + KiryuuAdapter.name);
-
-            const matches = utils.pathMatch(url, '/:chapterSlug');
-
-            if (!matches) {
-                throw {
-                    name: `Unable to parse '${url}'`,
-                    code: 'INVALID_URL',
-                };
-            }
-
-            try {
-                getChapter = await KiryuuAdapter.getChapter(url);
-            } catch (error) {
-                console.error('error', error);
-            }
-        } else if (MangakuAdapter.supportsUrl(url)) {
-            console.log('mangaFound: ' + MangakuAdapter.name);
-
-            const matches = utils.pathMatch(url, '/:chapterSlug');
-
-            if (!matches) {
-                throw {
-                    name: `Unable to parse '${url}'`,
-                    code: 'INVALID_URL',
-                };
-            }
-
-            try {
-                getChapter = await MangakuAdapter.getChapter(url);
-            } catch (error) {
-                console.error('error', error);
-            }
-        } else if (MangashiroAdapter.supportsUrl(url)) {
-            console.log('mangaFound: ' + MangashiroAdapter.name);
-
-            const matches = utils.pathMatch(url, '/:chapterSlug');
-
-            if (!matches) {
-                throw {
-                    name: `Unable to parse '${url}'`,
-                    code: 'INVALID_URL',
-                };
-            }
-
-            try {
-                getChapter = await MangashiroAdapter.getChapter(url);
-            } catch (error) {
-                console.error('error', error);
-            }
-        } else if (MangadopAdapter.supportsUrl(url)) {
-            console.log('mangaFound: ' + MangadopAdapter.name);
-
-            const matches = utils.pathMatch(url, '/:chapterSlug');
-
-            if (!matches) {
-                throw {
-                    name: `Unable to parse '${url}'`,
-                    code: 'INVALID_URL',
-                };
-            }
-
-            try {
-                getChapter = await MangadopAdapter.getChapter(url);
-            } catch (error) {
-                console.error('error', error);
-            }
-        } else if (KomikindoAdapter.supportsUrl(url)) {
-            console.log('mangaFound: ' + KomikindoAdapter.name);
-
-            const matches = utils.pathMatch(url, '/:chapterSlug');
-
-            if (!matches) {
-                throw {
-                    name: `Unable to parse '${url}'`,
-                    code: 'INVALID_URL',
-                };
-            }
-
-            try {
-                getChapter = await KomikindoAdapter.getChapter(url);
-            } catch (error) {
-                console.error('error', error);
-            }
-        } else if (MangaindoAdapter.supportsUrl(url)) {
-            console.log('mangaFound: ' + MangaindoAdapter.name);
-
-            const matches = utils.pathMatch(url, '/:chapterSlug');
-
-            if (!matches) {
-                throw {
-                    name: `Unable to parse '${url}'`,
-                    code: 'INVALID_URL',
-                };
-            }
-
-            try {
-                getChapter = await MangaindoAdapter.getChapter(url);
-            } catch (error) {
-                console.error('error', error);
-            }
-        } else if (MangakyoAdapter.supportsUrl(url)) {
-            console.log('mangaFound: ' + MangakyoAdapter.name);
-
-            const matches = utils.pathMatch(url, '/:chapterSlug');
-
-            if (!matches) {
-                throw {
-                    name: `Unable to parse '${url}'`,
-                    code: 'INVALID_URL',
-                };
-            }
-
-            try {
-                getChapter = await MangakyoAdapter.getChapter(url);
-            } catch (error) {
-                console.error('error', error);
+                    try {
+                        getChapter = await adapter.getChapter(url);
+                    } catch (error) {
+                        console.error('error', error);
+                    }
+                }
             }
         }
 
-        //MangakyoAdapter
         return getChapter;
     }
 
@@ -451,5 +301,11 @@ export class MangaService {
         }
 
         return responseManga;
+    }
+
+    supportSite() {
+        return this.adapterList.map(adapter => {
+            return adapter.supportData()
+        })
     }
 }
