@@ -347,12 +347,12 @@ export const getPDF = async (_request: FastifyRequest, _reply: FastifyReply) => 
 
 	const getPDF = await mangaService.proxyPDF(PDFLink)
 
-	const getFilename = PDFLink.split('/')[1]
+	// const getFilename = PDFLink.split('/')[1]
 
 	return _reply
 		.code(200)
-		.header('Content-Type', 'application/pdf')
-		.header('Content-Disposition', 'attachment; filename=' + getFilename)
+		// .header('Content-Type', 'application/pdf')
+		// .header('Content-Disposition', 'attachment; filename=' + getFilename)
 		.send(getPDF);
 
 }
