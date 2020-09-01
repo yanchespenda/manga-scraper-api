@@ -20,6 +20,10 @@ const MangaShiroAdapter = {
 		return `https://mangashiro.co`;
 	},
 
+	patternChapter(url) {
+		return utils.pathMatch(url, '/:chapterSlug')
+	},
+
 	async getSeriesId(url) {
 		const html: any = await get(url);
 		const dom = cheerio.load(html.body);
@@ -47,7 +51,7 @@ const MangaShiroAdapter = {
 			return '';
 		});
 
-		console.log('Image', $imageList);
+		// console.log('Image', $imageList);
 
 		const chapterId = dom("link[rel='shortlink']").first();
 		const chapterIdPre = chapterId.attr('href').replace(this._getHost(), '').replace('/?', '');
@@ -70,6 +74,16 @@ const MangaShiroAdapter = {
 			url: url,
 			pages: pages,
 		};
+	},
+
+	supportData() {
+		return {
+			website: this.name,
+			siteId: this.id,
+			mangaId: true,
+			chapterId: true,
+			images: true
+		}
 	},
 };
 

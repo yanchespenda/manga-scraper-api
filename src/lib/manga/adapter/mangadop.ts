@@ -20,6 +20,10 @@ const MangadopAdapter = {
 		return `https://mangadop.info`;
 	},
 
+	patternChapter(url) {
+		return utils.pathMatch(url, '/:chapterSlug')
+	},
+
 	async getSeriesId(url) {
 		const html: any = await get(url);
 		const dom = cheerio.load(html.body);
@@ -68,6 +72,16 @@ const MangadopAdapter = {
 			url: url,
 			pages: pages,
 		};
+	},
+
+	supportData() {
+		return {
+			website: this.name,
+			siteId: this.id,
+			mangaId: true,
+			chapterId: true,
+			images: true
+		}
 	},
 };
 

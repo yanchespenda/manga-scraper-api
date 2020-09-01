@@ -20,6 +20,10 @@ const KomikgueAdapter = {
 		return `http://www.komikgue.com`;
 	},
 
+	patternChapter(url) {
+		return utils.pathMatch(url, '/manga/:seriesSlug/:chapterSlug/:page?')
+	},
+
 	/* async getSeriesId(url) {
         const html: any = await get(url)
         const dom = cheerio.load(html.body)
@@ -70,6 +74,16 @@ const KomikgueAdapter = {
 			url: url,
 			pages: pages,
 		};
+	},
+
+	supportData() {
+		return {
+			website: this.name,
+			siteId: this.id,
+			mangaId: false,
+			chapterId: false,
+			images: true
+		}
 	},
 };
 

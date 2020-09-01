@@ -20,6 +20,10 @@ const MaidAdapter = {
 		return `https://www.maid.my.id`;
 	},
 
+	patternChapter(url) {
+		return utils.pathMatch(url, '/:chapterSlug')
+	},
+
 	async getSeriesId(url) {
 		const html: any = await get(url);
 		const dom = cheerio.load(html.body);
@@ -68,6 +72,16 @@ const MaidAdapter = {
 			url: url,
 			pages: pages,
 		};
+	},
+
+	supportData() {
+		return {
+			website: this.name,
+			siteId: this.id,
+			mangaId: true,
+			chapterId: true,
+			images: true
+		}
 	},
 };
 

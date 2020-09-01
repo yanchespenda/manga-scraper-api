@@ -18,6 +18,10 @@ const KomikgueAdapter = {
 		return `https://mangaku.pro`;
 	},
 
+	patternChapter(url) {
+		return utils.pathMatch(url, '/:chapterSlug')
+	},
+
 	async puppeteerRun(url: any) {
 		const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
 		const page = await browser.newPage();
@@ -67,6 +71,16 @@ const KomikgueAdapter = {
 			url: url,
 			pages: pages,
 		};
+	},
+
+	supportData() {
+		return {
+			website: this.name,
+			siteId: this.id,
+			mangaId: false,
+			chapterId: false,
+			images: true
+		}
 	},
 };
 

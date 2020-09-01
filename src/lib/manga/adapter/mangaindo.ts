@@ -20,6 +20,10 @@ const MangaindoAdapter = {
 		return `https://mangaindo.web.id`;
 	},
 
+	patternChapter(url) {
+		return utils.pathMatch(url, '/:chapterSlug')
+	},
+
 	async getSeriesId(url) {
 		const html: any = await get(url);
 		const dom = cheerio.load(html.body);
@@ -69,6 +73,16 @@ const MangaindoAdapter = {
 			url: url,
 			pages: pages,
 		};
+	},
+
+	supportData() {
+		return {
+			website: this.name,
+			siteId: this.id,
+			mangaId: false,
+			chapterId: true,
+			images: true
+		}
 	},
 };
 
