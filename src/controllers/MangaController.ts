@@ -88,7 +88,8 @@ export const getManga = async (request: FastifyRequest, reply: FastifyReply) => 
 						updatedAt: moment.now(),
 					});
 
-					MangaSchemaId = mangaSchema._id
+					if (mangaSchema)
+						MangaSchemaId = mangaSchema._id
 				} catch (error) {}
 			}
 		}
