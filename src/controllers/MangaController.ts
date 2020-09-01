@@ -2,6 +2,7 @@ import MangaSchema from '../models/MangaSchema';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { MangaService } from '../lib/manga/services';
 import moment from 'moment';
+import validator from 'validator'
 import { mangaServicesResponse, mangaServicesResponsePages } from '../interface/MangaInterface';
 import { config } from '../config';
 
@@ -14,6 +15,13 @@ export const getManga = async (request: FastifyRequest, reply: FastifyReply) => 
 		return reply.code(400).send({
 			error: true,
 			message: 'Query url is missing',
+		});
+	}
+
+	if (!validator.isURL(query.url)) {
+		return reply.code(400).send({
+			error: true,
+			message: 'URL not valid',
 		});
 	}
 
@@ -36,7 +44,7 @@ export const getManga = async (request: FastifyRequest, reply: FastifyReply) => 
 			chapterUrl: url,
 		});
 		if (mangaSchema) {
-			const getCreatedAtMoment = moment(mangaSchema.updatedAt).add(config.manga.reScrapAfter, 'minutes');
+			const getCreatedAtMoment = moment(mangaSchema.updatedAt).add(config.manga.reScrapAfter, 'seconds');
 			if (getCreatedAtMoment > moment()) {
 				isMangaFound = true;
 
@@ -56,42 +64,56 @@ export const getManga = async (request: FastifyRequest, reply: FastifyReply) => 
 	} catch (error) {}
 
 	const mangaService = new MangaService();
+
+	if (!mangaService.support(url)) {
+		return reply.code(400).send({
+			error: true,
+			message: 'Site not support',
+		});
+	}
 	
 	if (!isMangaFound) {
 		responseManga = await mangaService.runScraping(reply, url);
-		const getParseMangaId = mangaService.parserId(responseManga.id);
-		if (getParseMangaId.length > 0) {
-			if (isMangaUpdate) {
-				try {
-					const mangaSchema = await MangaSchema.findOne({
-						_id: MangaSchemaId,
-					});
-
-					if (mangaSchema) {
-						mangaSchema.imageList = responseManga.pages;
-						mangaSchema.updatedAt = moment.now();
-						mangaSchema.save();
-					}
-				} catch (error) {}
-			} else {
-				try {
-					const mangaSchema = await MangaSchema.create({
-						webId: getParseMangaId[0],
-						mangaId: getParseMangaId[1],
-						chapterId: getParseMangaId[2],
-						fullMangaId: responseManga.id,
-						chapterUrl: url,
-						imageList: responseManga.pages,
-						pdfLink: '',
-
-						createdAt: moment.now(),
-						updatedAt: moment.now(),
-					});
-
-					if (mangaSchema)
-						MangaSchemaId = mangaSchema._id
-				} catch (error) {}
+		if (responseManga.id !== null) {
+			const getParseMangaId = mangaService.parserId(responseManga.id);
+			if (getParseMangaId.length > 0) {
+				if (isMangaUpdate) {
+					try {
+						const mangaSchema = await MangaSchema.findOne({
+							_id: MangaSchemaId,
+						});
+	
+						if (mangaSchema) {
+							mangaSchema.imageList = responseManga.pages;
+							mangaSchema.updatedAt = moment.now();
+							mangaSchema.save();
+						}
+					} catch (error) {}
+				} else {
+					try {
+						const mangaSchema = await MangaSchema.create({
+							webId: getParseMangaId[0],
+							mangaId: getParseMangaId[1],
+							chapterId: getParseMangaId[2],
+							fullMangaId: responseManga.id,
+							chapterUrl: url,
+							imageList: responseManga.pages,
+							pdfLink: '',
+	
+							createdAt: moment.now(),
+							updatedAt: moment.now(),
+						});
+	
+						if (mangaSchema)
+							MangaSchemaId = mangaSchema._id
+					} catch (error) {}
+				}
 			}
+		} else {
+			return reply.code(500).send({
+				error: true,
+				message: 'Sorry, something went wrong',
+			});
 		}
 	}
 
@@ -119,6 +141,13 @@ export const getDownload = async (request: FastifyRequest, reply: FastifyReply) 
 		return reply.code(400).send({
 			error: true,
 			message: 'Query url is missing',
+		});
+	}
+
+	if (!validator.isURL(query.url)) {
+		return reply.code(400).send({
+			error: true,
+			message: 'URL not valid',
 		});
 	}
 
@@ -156,6 +185,13 @@ export const getDownload = async (request: FastifyRequest, reply: FastifyReply) 
 	} catch (error) { }
 
 	const mangaService = new MangaService();
+
+	if (!mangaService.support(url)) {
+		return reply.code(400).send({
+			error: true,
+			message: 'Site not support',
+		});
+	}
 
 	if (!isMangaFound) {
 		imageList = await mangaService.runScraping(reply, url);
@@ -211,7 +247,8 @@ export const getDownload = async (request: FastifyRequest, reply: FastifyReply) 
 	}
 
 	if (PDFLink.length > 0) {
-		PDFLink = await mangaService.generatePDFDownloadLink(PDFLink)
+		const baseProxy = `//${request.hostname}/api/pdf?id=`
+		PDFLink = baseProxy + MangaSchemaId
 	} else {
 		return reply.code(405).send({
 			error: true,
@@ -274,12 +311,62 @@ export const getProxy = async (request: FastifyRequest, reply: FastifyReply) => 
 		.send(getImage);
 }
 
-/* export const createManga = async (request: FastifyRequest, reply: FastifyReply) => {
-	const requestQuery = request.query;
-	const requestBody = request.body;
+export const getPDF = async (_request: FastifyRequest, _reply: FastifyReply) => {
+	const query: any = _request.query;
 
-	return reply.send({
-		query: requestQuery,
-		body: requestBody,
-	});
-}; */
+    if (!query.id) {
+		return _reply.code(400).send({
+			error: true,
+			message: 'Query id is missing',
+		});
+	}
+	
+	const id: string = query.id;
+	let isMangaFound = false;
+	let isMangaHasPDF = false;
+	let PDFLink = ""
+
+	try {
+		const mangaSchema = await MangaSchema.findOne({
+			_id: id,
+		});
+
+		if (mangaSchema) {
+			isMangaFound = true;
+
+			if (mangaSchema.pdfLink.length !== 0) {
+				isMangaHasPDF = true;
+
+				PDFLink = mangaSchema.pdfLink
+			}
+		}
+	} catch (error) { }
+	
+	if (!isMangaFound) {
+		return _reply.code(404).send({
+			error: true,
+			message: 'Manga not found',
+		});
+	}
+
+	if (!isMangaHasPDF) {
+		return _reply.code(404).send({
+			error: true,
+			message: 'Manga does not have pdf',
+		});
+	}
+
+	const mangaService = new MangaService();
+	PDFLink = await mangaService.generatePDFDownloadLink(PDFLink)
+
+	const getPDF = await mangaService.proxyPDF(PDFLink)
+
+	const getFilename = PDFLink.split('/')[1]
+
+	return _reply
+		.code(200)
+		.header('Content-Type', 'application/pdf')
+		.header('Content-Disposition', 'attachment; filename=' + getFilename)
+		.send(getPDF);
+
+}

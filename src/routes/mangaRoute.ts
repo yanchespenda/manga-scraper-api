@@ -21,6 +21,12 @@ const getProxyRoute: RouteOptions = {
 	handler: MangaController.getProxy,
 };
 
+const getPDFRoute: RouteOptions = {
+	method: 'GET',
+	url: '/api/pdf',
+	handler: MangaController.getPDF,
+};
+
 const getIndex: RouteOptions = {
 	method: 'GET',
 	url: '/',
@@ -34,6 +40,19 @@ const getFESupport: RouteOptions = {
 	handler: FrontendController.getIndexSupportSite,
 };
 
+const postFEStart: RouteOptions = {
+	method: 'POST',
+	url: '/api/_next/start',
+	handler: FrontendController.postStart,
+};
+
+const postFEPdf: RouteOptions = {
+	method: 'POST',
+	url: '/api/_next/pdf',
+	handler: FrontendController.postPDF,
+};
+
+
 /* const createMangaRoute: RouteOptions = {
 	method: 'POST',
 	url: '/api/manga',
@@ -44,10 +63,13 @@ const routes = [
 	getIndex,
 
 	getFESupport,
+	postFEStart,
+	postFEPdf,
 	
 	getMangaRoute,
 	getDownloadRoute,
-	getProxyRoute
+	getProxyRoute,
+	getPDFRoute
 ];
 
 export default routes;

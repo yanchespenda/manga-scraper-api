@@ -5,6 +5,7 @@ import path from 'path';
 import axios from 'axios';
 import poketo from 'poketo';
 import boom from '@hapi/boom';
+import rimraf from 'rimraf'
 import {
     FastifyReply
 } from 'fastify';
@@ -122,7 +123,9 @@ export class MangaService {
                     if (fs.lstatSync(curPath).isDirectory()) {
                         this.deleteFolderRecursive(curPath);
                     } else {
-                        fs.unlinkSync(curPath);
+                        rimraf(curPath, (err) => {
+                            if (err) console.log(err)
+                        });
                     }
                 }
             }
@@ -138,12 +141,14 @@ export class MangaService {
                     fs.stat(path.join(pathDir, file), function (err, stat) {
                         var endTime, now;
                         if (err) {
-                            return console.error(err);
+                            console.error(err);
                         }
                         now = new Date().getTime();
                         endTime = new Date(stat.ctime).getTime() + 3600000;
                         if (now > endTime) {
-                            return fs.unlinkSync(path.join(pathDir, file));
+                            rimraf(path.join(pathDir, file), (err) => {
+                                if (err) console.log(err)
+                            });
                         }
                     });
                 }
@@ -257,6 +262,14 @@ export class MangaService {
     async proxyImage(url) {
         const getBinary: any = await this.getImageBinary(url)
         return await sharp(getBinary).webp().toBuffer();
+    }
+
+    async proxyPDF(url) {
+        return axios
+        .get(url, {
+            responseType: 'arraybuffer'
+        })
+        .then(response => Buffer.from(response.data, 'binary'))
     }
 
     async runScraping(reply: FastifyReply, url: string): Promise<mangaServicesResponse> {
