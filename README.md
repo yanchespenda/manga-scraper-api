@@ -32,7 +32,7 @@ Scraping image files from manga website, Based on Poketo style
 * [Mangadop](https://mangadop.info/)
 * [Mangaindo](https://mangaindo.web.id/)
 * [Mangakyo](https://www.mangakyo.me/)
-* [Mangakyo](https://westmanga.info/)
+* [Westmanga](https://westmanga.info/)
 
 ## ENV Required
 For using s3 driver to upload pdf files, you need some env to make it well
