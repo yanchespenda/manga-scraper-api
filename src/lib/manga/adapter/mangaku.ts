@@ -1,6 +1,8 @@
 import puppeteer from 'puppeteer';
 import validator from 'validator';
 import utils from '../utils';
+import cheerio from 'cheerio';
+import { mangaServicesResponse } from '../../../interface/MangaInterface';
 
 const KomikgueAdapter = {
 	id: 'mangaku',
@@ -47,13 +49,25 @@ const KomikgueAdapter = {
 		});
 
 		await page.goto(url, { waitUntil: 'networkidle0' });
+
+		const dom = cheerio.load(await page.content());
+		const getTitle = dom('title').first().text().trim()
+		const data = {
+			getTitle
+		};
+
 		await browser.close();
 
-		return $imageList;
+		return {
+			image: $imageList,
+			data: data
+		};
 	},
 
-	async getChapter(url: any) {
-		const $imageList = await this.puppeteerRun(url);
+	async getChapter(url): Promise<mangaServicesResponse> {
+		const getData = await this.puppeteerRun(url);
+
+		const $imageList = getData.image
 
 		const chapterIdPage = -1;
 
@@ -66,10 +80,15 @@ const KomikgueAdapter = {
 
 		const getSeriesId = -1;
 
+		const getTitle = getData.data.getTitle
+		
+
 		return {
 			id: utils.generateId(this.id, getSeriesId, chapterIdPage),
 			url: url,
 			pages: pages,
+
+			title: getTitle
 		};
 	},
 

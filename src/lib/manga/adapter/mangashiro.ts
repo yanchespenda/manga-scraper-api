@@ -3,6 +3,7 @@ import validator from 'validator';
 import queryString from 'query-string';
 import { get } from '../get';
 import utils from '../utils';
+import { mangaServicesResponse } from '../../../interface/MangaInterface';
 
 const MangaShiroAdapter = {
 	id: 'mangashiro',
@@ -36,7 +37,7 @@ const MangaShiroAdapter = {
 		return chapterIdPage;
 	},
 
-	async getChapter(url) {
+	async getChapter(url): Promise<mangaServicesResponse> {
 		const html: any = await get(url);
 		const dom = cheerio.load(html.body);
 
@@ -69,10 +70,15 @@ const MangaShiroAdapter = {
 		const seriesAHref = seriesId.find('a').attr('href');
 		const getSeriesId = await this.getSeriesId(seriesAHref);
 
+		const getTitle = dom('title').first().text().trim()
+		
+
 		return {
 			id: utils.generateId(this.id, getSeriesId, chapterIdPage),
 			url: url,
 			pages: pages,
+
+			title: getTitle
 		};
 	},
 

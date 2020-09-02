@@ -3,6 +3,7 @@ import validator from 'validator';
 // import queryString from "query-string"
 import { get } from '../get';
 import utils from '../utils';
+import { mangaServicesResponse } from '../../../interface/MangaInterface';
 
 const KomikuAdapter = {
 	id: 'komiku',
@@ -36,7 +37,7 @@ const KomikuAdapter = {
         return chapterIdPage
     }, */
 
-	async getChapter(url) {
+	async getChapter(url): Promise<mangaServicesResponse> {
 		const html: any = await get(url);
 		const dom = cheerio.load(html.body);
 
@@ -64,12 +65,16 @@ const KomikuAdapter = {
 		// const seriesId = dom('.la').first()
 		// const seriesAHref = seriesId.find('a').attr('href')
 		// const getSeriesId = await this.getSeriesId(seriesAHref)
-		const getSeriesId = -1;
+		const getSeriesId = -1
+		const getTitle = dom('title').first().text().trim()
+		
 
 		return {
 			id: utils.generateId(this.id, getSeriesId, chapterIdPage),
 			url: url,
 			pages: pages,
+
+			title: getTitle
 		};
 	},
 
