@@ -52,6 +52,12 @@ const postFEPdf: RouteOptions = {
 	handler: FrontendController.postPDF,
 };
 
+const getFEReader: RouteOptions = {
+	method: 'GET',
+	url: '/api/_next/reader',
+	handler: FrontendController.getImages,
+};
+
 
 /* const createMangaRoute: RouteOptions = {
 	method: 'POST',
@@ -69,7 +75,8 @@ const routes = [
 	getMangaRoute,
 	getDownloadRoute,
 	getProxyRoute,
-	getPDFRoute
+	getPDFRoute,
+	getFEReader
 ];
 
 export default routes;

@@ -4,7 +4,7 @@ import validator from "validator";
 import MangaSchema from "../models/MangaSchema";
 import moment from "moment";
 import { config } from '../config';
-import { mangaServicesResponse } from "../interface/MangaInterface";
+import { mangaServicesResponse, mangaServicesResponsePages } from "../interface/MangaInterface";
 
 export const getIndexSupportSite = async (_request: FastifyRequest, reply: FastifyReply) => {
 
@@ -19,7 +19,7 @@ export const postStart = async (_request: FastifyRequest, _reply: FastifyReply) 
     if (!query.url) {
 		return _reply.code(400).send({
 			error: true,
-			message: 'Query url is missing',
+			message: 'Body url is missing',
 		});
     }
 
@@ -137,7 +137,7 @@ export const postPDF = async (_request: FastifyRequest, _reply: FastifyReply) =>
     if (!query.id) {
 		return _reply.code(400).send({
 			error: true,
-			message: 'Query id is missing',
+			message: 'Body id is missing',
 		});
     }
 
@@ -231,4 +231,62 @@ export const postPDF = async (_request: FastifyRequest, _reply: FastifyReply) =>
 		data: PDFLink,
 	});
 
+}
+
+export const getImages = async (_request: FastifyRequest, _reply: FastifyReply) => {
+	const query: any = _request.query;
+
+    if (!query.id) {
+		return _reply.code(400).send({
+			error: true,
+			message: 'Query id is missing',
+		});
+    }
+
+    const id: string = query.id;
+	let isMangaFound = false;
+	// let isHaveImages = false
+	let imageList: mangaServicesResponsePages[] = []
+	let title = ''
+	
+	try {
+		const mangaSchema = await MangaSchema.findOne({
+			_id: id,
+		});
+
+		if (mangaSchema) {
+			isMangaFound = true;
+
+			if (mangaSchema.imageList.length !== 0) {
+				// isHaveImages = true;
+
+				imageList = mangaSchema.imageList
+			}
+
+            title = mangaSchema.title
+		}
+	} catch (error) { }
+
+	if (!isMangaFound) {
+		return _reply.code(404).send({
+			error: true,
+			message: 'Data not found',
+		});
+	}
+
+	/* if (!isHaveImages) {
+		return _reply.code(404).send({
+			error: true,
+			message: 'Data not found',
+		});
+	} */
+	
+	return _reply.code(200).send({
+		title: title,
+
+		images: imageList.map(item => {
+			const baseProxy = `//${_request.hostname}/api/proxy?`
+			return baseProxy + `mangaId=${id}&pageId=${item._id}`
+		})
+	});
 }
