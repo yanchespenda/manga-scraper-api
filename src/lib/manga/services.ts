@@ -29,6 +29,7 @@ import MangadopAdapter from './adapter/mangadop';
 import KomikindoAdapter from './adapter/komikindo';
 import MangaindoAdapter from './adapter/mangaindo';
 import MangakyoAdapter from './adapter/mangakyo';
+import WestmangaAdapter from './adapter/westmanga';
 
 import { config } from "../../config";
 
@@ -66,7 +67,8 @@ export class MangaService {
             MangadopAdapter,
             KomikindoAdapter,
             MangaindoAdapter,
-            MangakyoAdapter
+            MangakyoAdapter,
+            WestmangaAdapter
         ]
     }
 
@@ -78,10 +80,12 @@ export class MangaService {
     }
 
     async get(url) {
-        let getChapter: any = {
-            id: null,
-            url: null,
+        let getChapter: mangaServicesResponse = {
+            id: '',
+            url: '',
             pages: [],
+
+            title: ''
         };
 
         if (this.adapterList.length > 0) {
@@ -277,6 +281,8 @@ export class MangaService {
             id: '',
             url: '',
             pages: [],
+
+            title: ''
         };
         let poketoNotSupport = false;
 
@@ -312,6 +318,8 @@ export class MangaService {
                 }) */
             }
         }
+
+        console.log('runScraping: Result', responseManga)
 
         return responseManga;
     }

@@ -10,6 +10,7 @@ const supportedDomains = [
 	'komikindo.web.id',
 	'mangaindo.web.id',
 	'mangakyo.me',
+	'westmanga.info'
 ];
 
 export default url => supportedDomains.some(str => url.indexOf(str) !== -1);
