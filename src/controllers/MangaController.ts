@@ -37,7 +37,9 @@ export const getManga = async (request: FastifyRequest, reply: FastifyReply) => 
 	let responseManga: mangaServicesResponse = {
 		id: '',
 		url: url,
-		pages: []
+		pages: [],
+
+		title: ''
 	}
 	try {
 		const mangaSchema = await MangaSchema.findOne({
@@ -67,7 +69,7 @@ export const getManga = async (request: FastifyRequest, reply: FastifyReply) => 
 	
 	if (!isMangaFound) {
 		responseManga = await mangaService.runScraping(reply, url);
-		if (responseManga.id !== null) {
+		if (responseManga.id.toString().length > 0 && responseManga.url.toString().length > 0 && responseManga.pages.length > 0) {
 			const getParseMangaId = mangaService.parserId(responseManga.id);
 			if (getParseMangaId.length > 0) {
 				if (isMangaUpdate) {
@@ -92,6 +94,7 @@ export const getManga = async (request: FastifyRequest, reply: FastifyReply) => 
 							chapterUrl: url,
 							imageList: responseManga.pages,
 							pdfLink: '',
+							title: responseManga.title || '',
 	
 							createdAt: moment.now(),
 							updatedAt: moment.now(),
@@ -153,7 +156,9 @@ export const getDownload = async (request: FastifyRequest, reply: FastifyReply) 
 	let imageList: mangaServicesResponse = {
 		id: '',
 		url: url,
-		pages: []
+		pages: [],
+		
+		title: ''
 	}
 
 	try {
@@ -181,39 +186,48 @@ export const getDownload = async (request: FastifyRequest, reply: FastifyReply) 
 
 	if (!isMangaFound) {
 		imageList = await mangaService.runScraping(reply, url);
-		const getParseMangaId = mangaService.parserId(imageList.id);
-		if (getParseMangaId.length > 0) {
-			if (isMangaUpdate) {
-				try {
-					const mangaSchema = await MangaSchema.findOne({
-						_id: MangaSchemaId,
-					});
-
-					if (mangaSchema) {
-						mangaSchema.imageList = imageList.pages;
-						mangaSchema.updatedAt = moment.now();
-						mangaSchema.save();
-					}
-				} catch (error) {}
-			} else {
-				try {
-					const mangaSchema = await MangaSchema.create({
-						webId: getParseMangaId[0],
-						mangaId: getParseMangaId[1],
-						chapterId: getParseMangaId[2],
-						fullMangaId: imageList.id,
-						chapterUrl: url,
-						imageList: imageList.pages,
-						pdfLink: '',
-
-						createdAt: moment.now(),
-						updatedAt: moment.now(),
-					});
-
-					MangaSchemaId = mangaSchema._id
-				} catch (error) {}
+		if (imageList.id.toString().length > 0 && imageList.url.toString().length > 0 && imageList.pages.length > 0) {
+			const getParseMangaId = mangaService.parserId(imageList.id);
+			if (getParseMangaId.length > 0) {
+				if (isMangaUpdate) {
+					try {
+						const mangaSchema = await MangaSchema.findOne({
+							_id: MangaSchemaId,
+						});
+	
+						if (mangaSchema) {
+							mangaSchema.imageList = imageList.pages;
+							mangaSchema.updatedAt = moment.now();
+							mangaSchema.save();
+						}
+					} catch (error) {}
+				} else {
+					try {
+						const mangaSchema = await MangaSchema.create({
+							webId: getParseMangaId[0],
+							mangaId: getParseMangaId[1],
+							chapterId: getParseMangaId[2],
+							fullMangaId: imageList.id,
+							chapterUrl: url,
+							imageList: imageList.pages,
+							pdfLink: '',
+							title: imageList.title || '',
+	
+							createdAt: moment.now(),
+							updatedAt: moment.now(),
+						});
+	
+						MangaSchemaId = mangaSchema._id
+					} catch (error) {}
+				}
 			}
+		} else {
+			return reply.code(500).send({
+				error: true,
+				message: 'Sorry, something went wrong',
+			});
 		}
+		
 	}
 
 	if (!isMangaHasPDF) {
@@ -347,12 +361,12 @@ export const getPDF = async (_request: FastifyRequest, _reply: FastifyReply) => 
 
 	const getPDF = await mangaService.proxyPDF(PDFLink)
 
-	// const getFilename = PDFLink.split('/')[1]
+	const getFilename = PDFLink.split('/')[1]
 
 	return _reply
 		.code(200)
 		// .header('Content-Type', 'application/pdf')
-		// .header('Content-Disposition', 'attachment; filename=' + getFilename)
+		.header('Content-Disposition', 'attachment; filename=' + getFilename)
 		.send(getPDF);
 
 }

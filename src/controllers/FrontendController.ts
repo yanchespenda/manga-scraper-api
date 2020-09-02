@@ -34,7 +34,8 @@ export const postStart = async (_request: FastifyRequest, _reply: FastifyReply) 
     let isMangaFound = false;
 	let isMangaUpdate = false;
     let MangaSchemaId: any = '';
-    let PDFLink = ''
+	let PDFLink = ''
+	let MangaTitle = ''
     try {
 		const mangaSchema = await MangaSchema.findOne({
 			chapterUrl: url,
@@ -47,48 +48,58 @@ export const postStart = async (_request: FastifyRequest, _reply: FastifyReply) 
 				isMangaUpdate = true;
             }
             MangaSchemaId = mangaSchema._id;
-            PDFLink = mangaSchema.pdfLink
+			PDFLink = mangaSchema.pdfLink
+			MangaTitle = mangaSchema.title
 		}
     } catch (error) {}
 
     const mangaService = new MangaService();
 
     if (!isMangaFound) {
-        const responseManga: mangaServicesResponse = await mangaService.runScraping(_reply, url);
-        const getParseMangaId = mangaService.parserId(responseManga.id);
-        if (getParseMangaId.length > 0) {
-			if (isMangaUpdate) {
-				try {
-					const mangaSchema = await MangaSchema.findOne({
-						_id: MangaSchemaId,
-					});
-
-					if (mangaSchema) {
-						mangaSchema.imageList = responseManga.pages;
-						mangaSchema.updatedAt = moment.now();
-                        mangaSchema.save();
-                    }
-						
-				} catch (error) {}
-			} else {
-				try {
-					const mangaSchema = await MangaSchema.create({
-						webId: getParseMangaId[0],
-						mangaId: getParseMangaId[1],
-						chapterId: getParseMangaId[2],
-						fullMangaId: responseManga.id,
-						chapterUrl: url,
-						imageList: responseManga.pages,
-						pdfLink: '',
-
-						createdAt: moment.now(),
-						updatedAt: moment.now(),
-					});
-
-					if (mangaSchema)
-						MangaSchemaId = mangaSchema._id
-				} catch (error) {}
+		const responseManga: mangaServicesResponse = await mangaService.runScraping(_reply, url);
+		if (responseManga.id.toString().length > 0 && responseManga.url.toString().length > 0 && responseManga.pages.length > 0) {
+			const getParseMangaId = mangaService.parserId(responseManga.id);
+			if (getParseMangaId.length > 0) {
+				if (isMangaUpdate) {
+					try {
+						const mangaSchema = await MangaSchema.findOne({
+							_id: MangaSchemaId,
+						});
+	
+						if (mangaSchema) {
+							mangaSchema.imageList = responseManga.pages;
+							mangaSchema.updatedAt = moment.now();
+							mangaSchema.save();
+						}
+							
+					} catch (error) {}
+				} else {
+					try {
+						const mangaSchema = await MangaSchema.create({
+							webId: getParseMangaId[0],
+							mangaId: getParseMangaId[1],
+							chapterId: getParseMangaId[2],
+							fullMangaId: responseManga.id,
+							chapterUrl: url,
+							imageList: responseManga.pages,
+							pdfLink: '',
+							title: responseManga.title || '',
+	
+							createdAt: moment.now(),
+							updatedAt: moment.now(),
+						});
+	
+						if (mangaSchema)
+							MangaSchemaId = mangaSchema._id
+					} catch (error) {}
+				}
 			}
+			MangaTitle = responseManga.title || ''
+		} else {
+			return _reply.code(500).send({
+				error: true,
+				message: 'Sorry, something went wrong',
+			});
 		}
     }
 
@@ -100,7 +111,11 @@ export const postStart = async (_request: FastifyRequest, _reply: FastifyReply) 
         reader: {
             enable: false,
             link: ''
-        },
+		},
+		
+		info: {
+			title: MangaTitle
+		}
     }
 
     if (PDFLink.length > 0) {
