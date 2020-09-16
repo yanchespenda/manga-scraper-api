@@ -25,9 +25,12 @@ ENV NPM_CONFIG_LOGLEVEL=warn
 
 # copy project definition/dependencies files, for better reuse of layers
 COPY package*.json ./
+COPY yarn.lock ./
 
 # copy stuff required by prepublish (postinstall)
 COPY .snyk ./
+COPY tsconfig.json ./
+COPY ./src ./src
 
 # install dependencies here, for better reuse of layers
 RUN yarn install && yarn audit fix && yarn cache clean --force && yarn build
