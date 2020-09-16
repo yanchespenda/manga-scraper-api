@@ -33,7 +33,7 @@ COPY tsconfig.json ./
 COPY ./src ./src
 
 # install dependencies here, for better reuse of layers
-RUN yarn install && yarn audit fix && yarn cache clean --force && yarn build
+RUN yarn install && yarn cache clean --force && yarn build
 
 # copy all sources in the container (exclusions in .dockerignore file)
 COPY --chown=nodejs:nodejs . .
